@@ -1,70 +1,83 @@
 local TWBD = CreateFrame('Frame')
 
-
-TWBD:RegisterEvent("UNIT_AURA")
+TWBD:RegisterEvent("COMBAT_TEXT_UPDATE")
 TWBD:RegisterEvent("PLAYER_REGEN_DISABLED")
 TWBD:RegisterEvent("PLAYER_REGEN_ENABLED")
+TWBD.combat = false
 
---local icon = 'Interface\\Icons\\Spell_Holy_Renew'
-local icon = 'Interface\\Icons\\INV_Misc_Head_Dragon_Blue'
+--TWBD.icon = 'Interface\\Icons\\Spell_Holy_Renew'
+TWBD.icon = 'Interface\\Icons\\INV_Misc_Head_Dragon_Blue'
+--TWBD.DB_Name = 'Renew'
+TWBD.DB_Name = 'Aura of the Blue Dragon'
 
-local TBD_TimerFrame = CreateFrame('Frame')
-TBD_TimerFrame:Hide()
-TBD_TimerFrame:SetScript("OnUpdate", function()
+TWBD.lastTimeLeft = 2000
+
+TWBD.animFrame = 0
+TWBD.maxAnimFrames = 40
+TWBD.animate = false
+
+TWBD:SetScript("OnUpdate", function()
+    if not TWBD.combat then return false end
     for j = 0, 31 do
         local timeleft = GetPlayerBuffTimeLeft(GetPlayerBuff(j, "HELPFUL"))
         local texture = GetPlayerBuffTexture(GetPlayerBuff(j, "HELPFUL"))
 
         if texture then
-            if texture == icon then
+            if texture == TWBD.icon then
+
+                --proc during proc detection
+--                if math.floor(timeleft) > TWBD.lastTimeLeft then
+--                    TWBD.combatProcs = TWBD.combatProcs + 1
+--                    TWBD.animate = true
+--                end
+--
+--                if TWBD.animate then
+--                    if TWBD.animFrame < TWBD.maxAnimFrames then
+--                        TWBD.animFrame = TWBD.animFrame + 1
+--                        getglobal('TWBlueDragonIcon'):SetWidth(64 + 16 * (TWBD.animFrame / TWBD.maxAnimFrames));
+--                        getglobal('TWBlueDragonIcon'):SetHeight(64 + 16 * (TWBD.animFrame / TWBD.maxAnimFrames));
+--                    else
+--                        TWBD.animate = false
+--                        TWBD.animFrame = 0
+--                        getglobal('TWBlueDragonIcon'):SetWidth(64);
+--                        getglobal('TWBlueDragonIcon'):SetHeight(64);
+--                    end
+--                end
+
                 getglobal('TWBlueDragonTimeLeft'):SetText(math.floor(timeleft))
+                getglobal('TWBlueDragonProcsPerCombat'):SetText(TWBD.combatProcs)
+
+                TWBD.lastTimeLeft = math.floor(timeleft)
+
             end
         end
     end
 end)
 
-TBD_TimerFrame.combatProcs = 0
-TBD_TimerFrame.hasBlueDragon = false
+TWBD.combatProcs = 0
 
 TWBD:SetScript("OnEvent", function()
     if event then
         if event == "PLAYER_REGEN_ENABLED" then --left combat
-            if TBD_TimerFrame.combatProcs > 0 then
-                DEFAULT_CHAT_FRAME:AddMessage("|cff0070de[TWBlueDragon]" .. FONT_COLOR_CODE_CLOSE .. ": " .. TBD_TimerFrame.combatProcs .. ' time(s) last fight.', 0, 1, 0)
+            if TWBD.combatProcs > 0 then
+                DEFAULT_CHAT_FRAME:AddMessage("|cff0070de[TWBlueDragon]" .. FONT_COLOR_CODE_CLOSE .. ": " .. TWBD.combatProcs .. ' time(s) last fight.', 0, 1, 0)
             end
-            TBD_TimerFrame.combatProcs = 0
+            TWBD.combatProcs = 0
+            TWBD.combat = false
+            TWBD.lastTimeLeft = 2000
         end
         if event == "PLAYER_REGEN_DISABLED" then --entered combat
-            TBD_TimerFrame.combatProcs = 0
+            TWBD.combatProcs = 0
+            TWBD.combat = true
         end
-        if event == "UNIT_AURA" then
-            if arg1 == 'player' then
-                for j = 0, 31 do
-                    local B = UnitBuff("player", j);
-                    local foundBD = false
-                    if B then
-                        if B == icon then
-                            foundBD = true
-                            getglobal('TWBlueDragon'):Show()
-                            getglobal('TWBlueDragon'):SetAlpha(0.5)
-                            TBD_TimerFrame:Show()
-                            if not TBD_TimerFrame.hasBlueDragon then
-                                TBD_TimerFrame.combatProcs = TBD_TimerFrame.combatProcs + 1
-                                TBD_TimerFrame.hasBlueDragon = true
-                            end
-                            getglobal('TWBlueDragonProcsPerCombat'):SetText(TBD_TimerFrame.combatProcs)
-                            return false
-                        end
-                    end
-                    if not foundBD then
-                        TBD_TimerFrame.hasBlueDragon = false
-                    end
-                end
-                if getglobal('TWBlueDragon'):IsVisible() then
-                    getglobal('TWBlueDragon'):Hide()
-                    TBD_TimerFrame:Hide()
-                end
-            end
+        if event == "COMBAT_TEXT_UPDATE" and arg1 == "AURA_START" and arg2 == TWBD.DB_Name then
+            if not TWBD.combat then return false end
+            getglobal('TWBlueDragon'):Show()
+            getglobal('TWBlueDragon'):SetAlpha(0.5)
+            TWBD.combatProcs = TWBD.combatProcs + 1
+        end
+        if event == "COMBAT_TEXT_UPDATE" and arg1 == "AURA_END" and arg2 == TWBD.DB_Name then
+            getglobal('TWBlueDragon'):Hide()
         end
     end
 end)
