@@ -7,10 +7,13 @@ TWBD.combat = false
 
 --TWBD.icon = 'Interface\\Icons\\Spell_Holy_Renew'
 TWBD.icon = 'Interface\\Icons\\INV_Misc_Head_Dragon_Blue'
+--TWBD.icon = 'Interface\\Icons\\Spell_Nature_Rejuvenation'
 --TWBD.DB_Name = 'Renew'
 TWBD.DB_Name = 'Aura of the Blue Dragon'
+--TWBD.DB_Name = 'Rejuvenation'
 
 TWBD.lastTimeLeft = 2000
+TWBD.lastTime = 2000
 
 TWBD.animFrame = 0
 TWBD.maxAnimFrames = 40
@@ -18,6 +21,7 @@ TWBD.animate = false
 
 TWBD:SetScript("OnUpdate", function()
     if not TWBD.combat then return false end
+    if TWBD.lastTime == GetTime() then return end
     for j = 0, 31 do
         local timeleft = GetPlayerBuffTimeLeft(GetPlayerBuff(j, "HELPFUL"))
         local texture = GetPlayerBuffTexture(GetPlayerBuff(j, "HELPFUL"))
@@ -26,32 +30,34 @@ TWBD:SetScript("OnUpdate", function()
             if texture == TWBD.icon then
 
                 --proc during proc detection
---                if math.floor(timeleft) > TWBD.lastTimeLeft then
---                    TWBD.combatProcs = TWBD.combatProcs + 1
---                    TWBD.animate = true
---                end
---
---                if TWBD.animate then
---                    if TWBD.animFrame < TWBD.maxAnimFrames then
---                        TWBD.animFrame = TWBD.animFrame + 1
---                        getglobal('TWBlueDragonIcon'):SetWidth(64 + 16 * (TWBD.animFrame / TWBD.maxAnimFrames));
---                        getglobal('TWBlueDragonIcon'):SetHeight(64 + 16 * (TWBD.animFrame / TWBD.maxAnimFrames));
---                    else
---                        TWBD.animate = false
---                        TWBD.animFrame = 0
---                        getglobal('TWBlueDragonIcon'):SetWidth(64);
---                        getglobal('TWBlueDragonIcon'):SetHeight(64);
---                    end
---                end
+                if math.floor(timeleft) > TWBD.lastTimeLeft then
+                    TWBD.combatProcs = TWBD.combatProcs + 1
+                    TWBD.animate = true
+                end
+
+                if TWBD.animate then
+                    if TWBD.animFrame < TWBD.maxAnimFrames then
+                        TWBD.animFrame = TWBD.animFrame + 1
+                        getglobal('TWBlueDragonIcon'):SetWidth(64 + 16 * (TWBD.animFrame / TWBD.maxAnimFrames));
+                        getglobal('TWBlueDragonIcon'):SetHeight(64 + 16 * (TWBD.animFrame / TWBD.maxAnimFrames));
+                    else
+                        TWBD.animate = false
+                        TWBD.animFrame = 0
+                        getglobal('TWBlueDragonIcon'):SetWidth(64);
+                        getglobal('TWBlueDragonIcon'):SetHeight(64);
+                    end
+                end
 
                 getglobal('TWBlueDragonTimeLeft'):SetText(math.floor(timeleft))
                 getglobal('TWBlueDragonProcsPerCombat'):SetText(TWBD.combatProcs)
 
                 TWBD.lastTimeLeft = math.floor(timeleft)
+                TWBD.lastTime = GetTime()
 
             end
         end
     end
+
 end)
 
 TWBD.combatProcs = 0
@@ -78,6 +84,7 @@ TWBD:SetScript("OnEvent", function()
         end
         if event == "COMBAT_TEXT_UPDATE" and arg1 == "AURA_END" and arg2 == TWBD.DB_Name then
             getglobal('TWBlueDragon'):Hide()
+            TWBD.lastTimeLeft = 2000
         end
     end
 end)
