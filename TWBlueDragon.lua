@@ -20,7 +20,12 @@ TWBD.maxAnimFrames = 40
 TWBD.animate = false
 
 TWBD:SetScript("OnUpdate", function()
-    if not TWBD.combat then return false end
+    if not TWBD.combat then
+        if getglobal('TWBlueDragon'):IsVisible() then
+            getglobal('TWBlueDragon'):Hide()
+        end
+        return false
+    end
     if TWBD.lastTime == GetTime() then return end
     for j = 0, 31 do
         local timeleft = GetPlayerBuffTimeLeft(GetPlayerBuff(j, "HELPFUL"))
@@ -53,11 +58,9 @@ TWBD:SetScript("OnUpdate", function()
 
                 TWBD.lastTimeLeft = math.floor(timeleft)
                 TWBD.lastTime = GetTime()
-
             end
         end
     end
-
 end)
 
 TWBD.combatProcs = 0
