@@ -1,5 +1,7 @@
 local TWBD = CreateFrame('Frame')
 
+local TWWingsAnimation = CreateFrame("Frame")
+
 TWBD:RegisterEvent("COMBAT_TEXT_UPDATE")
 TWBD:RegisterEvent("PLAYER_REGEN_DISABLED")
 TWBD:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -26,7 +28,9 @@ TWBD:SetScript("OnUpdate", function()
         end
         return false
     end
-    if TWBD.lastTime == GetTime() then return end
+    if TWBD.lastTime == GetTime() then
+        return
+    end
     for j = 0, 31 do
         local timeleft = GetPlayerBuffTimeLeft(GetPlayerBuff(j, "HELPFUL"))
         local texture = GetPlayerBuffTexture(GetPlayerBuff(j, "HELPFUL"))
@@ -67,7 +71,8 @@ TWBD.combatProcs = 0
 
 TWBD:SetScript("OnEvent", function()
     if event then
-        if event == "PLAYER_REGEN_ENABLED" then --left combat
+        if event == "PLAYER_REGEN_ENABLED" then
+            --left combat
             if TWBD.combatProcs > 0 then
                 DEFAULT_CHAT_FRAME:AddMessage("|cff0070de[TWBlueDragon]" .. FONT_COLOR_CODE_CLOSE .. ": " .. TWBD.combatProcs .. ' time(s) last fight.', 0, 1, 0)
             end
@@ -75,19 +80,82 @@ TWBD:SetScript("OnEvent", function()
             TWBD.combat = false
             TWBD.lastTimeLeft = 2000
         end
-        if event == "PLAYER_REGEN_DISABLED" then --entered combat
+        if event == "PLAYER_REGEN_DISABLED" then
+            --entered combat
             TWBD.combatProcs = 0
             TWBD.combat = true
         end
         if event == "COMBAT_TEXT_UPDATE" and arg1 == "AURA_START" and arg2 == TWBD.DB_Name then
-            if not TWBD.combat then return false end
-            getglobal('TWBlueDragon'):Show()
+            if not TWBD.combat then
+                return false
+            end
+            --getglobal('TWBlueDragon'):Show()
             getglobal('TWBlueDragon'):SetAlpha(0.5)
             TWBD.combatProcs = TWBD.combatProcs + 1
+            TWWingsAnimation.blueDragon = true
+            TWWingsAnimation:Show()
         end
         if event == "COMBAT_TEXT_UPDATE" and arg1 == "AURA_END" and arg2 == TWBD.DB_Name then
             getglobal('TWBlueDragon'):Hide()
             TWBD.lastTimeLeft = 2000
+
+            TWWingsAnimation.blueDragon = false
+            TWWingsAnimation:Hide()
         end
     end
 end)
+
+TWWingsAnimation:Hide()
+TWWingsAnimation.innerFocus = false
+TWWingsAnimation.blueDragon = false
+
+TWWingsAnimation.scale = 1
+TWWingsAnimation.direction = 1
+
+TWWingsAnimation:SetScript("OnShow", function()
+    this.startTime = GetTime()
+    if TWWingsAnimation.innerFocus then
+        getglobal('TWBDWingsTTop'):Show()
+    else
+        getglobal('TWBDWingsTTop'):Hide()
+    end
+    if TWWingsAnimation.blueDragon then
+        getglobal('TWBDWingsTLeft'):Show()
+        getglobal('TWBDWingsTRight'):Show()
+    else
+        getglobal('TWBDWingsTLeft'):Hide()
+        getglobal('TWBDWingsTRight'):Hide()
+    end
+end)
+
+TWWingsAnimation:SetScript("OnHide", function()
+    TWWingsAnimation.scale = 1
+    TWWingsAnimation.direction = 1
+
+    getglobal('TWBDWingsTTop'):Hide()
+    getglobal('TWBDWingsTLeft'):Hide()
+    getglobal('TWBDWingsTRight'):Hide()
+end)
+
+TWWingsAnimation:SetScript("OnUpdate", function()
+    local plus = 0.02 --seconds
+    local gt = GetTime() * 1000
+    local st = (this.startTime + plus) * 1000
+    if gt >= st then
+        TWWingsAnimation.scale = TWWingsAnimation.scale + 0.005 * TWWingsAnimation.direction
+
+        if TWWingsAnimation.scale >= 1.1 then
+            TWWingsAnimation.direction = -1
+        end
+        if TWWingsAnimation.scale <= 1 then
+            TWWingsAnimation.direction = 1
+        end
+        getglobal('TWBDWings'):SetScale(TWWingsAnimation.scale)
+        getglobal('TWBDWings'):SetAlpha(TWWingsAnimation.scale - 0.5)
+        this.startTime = GetTime()
+    end
+end)
+
+function start_wings_anim()
+    TWWingsAnimation:Show()
+end

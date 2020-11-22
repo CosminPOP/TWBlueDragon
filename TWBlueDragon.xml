@@ -2,6 +2,59 @@
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
     <Script file="TWBlueDragon.lua"/>
 
+    <Frame name="TWBDWings">
+        <Size>
+            <AbsDimension x="450" y="256"/>
+        </Size>
+        <Anchors>
+            <Anchor point="CENTER"/>
+        </Anchors>
+        <Layers>
+            <Layer level="OVERLAY">
+                <Texture name="$parentTTop" hidden="true" file="Interface\addons\TWBlueDragon\images\denounce">
+                    <Size>
+                        <AbsDimension x="256" y="128"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="TOP">
+                            <Offset>
+                                <AbsDimension x="0" y="100"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </Texture>
+                <Texture name="$parentTLeft" hidden="true" file="Interface\addons\TWBlueDragon\images\monk_tiger">
+                    <Size>
+                        <AbsDimension x="128" y="256"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT">
+                            <Offset>
+                                <AbsDimension x="0" y="0"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                </Texture>
+                <Texture name="$parentTRight" hidden="true" file="Interface\addons\TWBlueDragon\images\monk_tiger">
+                    <Size>
+                        <AbsDimension x="128" y="256"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="RIGHT">
+                            <Offset>
+                                <AbsDimension x="0" y="0"/>
+                            </Offset>
+                        </Anchor>
+                    </Anchors>
+                    <TexCoords left="1" right="0" top="0" bottom="1" />
+                </Texture>
+            </Layer>
+        </Layers>
+        <Frames>
+
+        </Frames>
+    </Frame>
+
     <Frame name="TWBlueDragon" hidden="true" toplevel="true"
            parent="UIParent" movable="true" enableMouse="true">
         <Size>
@@ -23,7 +76,7 @@
                     <Color r="1" g="1" b="1" a="1"/>
                     <FontHeight val="32"/>
                     <Shadow>
-                        <Offset x="0" y="0" />
+                        <Offset x="0" y="0"/>
                         <Color r="1" g="1" b="1"/>
                     </Shadow>
                 </FontString>
@@ -38,7 +91,7 @@
                     <Color r="1" g="1" b="1" a="1"/>
                     <FontHeight val="14"/>
                     <Shadow>
-                        <Offset x="0" y="0" />
+                        <Offset x="0" y="0"/>
                         <Color r="1" g="1" b="1"/>
                     </Shadow>
                 </FontString>
@@ -62,17 +115,17 @@
 
         <Scripts>
             <OnLoad>
-                    this:RegisterForDrag("LeftButton");
-                    this:SetMovable(1);
-                    this:SetUserPlaced(true);
+                this:RegisterForDrag("LeftButton");
+                this:SetMovable(1);
+                this:SetUserPlaced(true);
             </OnLoad>
             <OnDragStart>
-                    this:StartMoving();
-                    this.isMoving = true;
+                this:StartMoving();
+                this.isMoving = true;
             </OnDragStart>
             <OnDragStop>
-                    this:StopMovingOrSizing();
-                    this.isMoving = false;
+                this:StopMovingOrSizing();
+                this.isMoving = false;
             </OnDragStop>
         </Scripts>
     </Frame>
