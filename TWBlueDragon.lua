@@ -68,6 +68,7 @@ TWBD:SetScript("OnUpdate", function()
 end)
 
 TWBD.combatProcs = 0
+TWBD.rejuvProcs = 0
 
 TWBD:SetScript("OnEvent", function()
     if event then
@@ -76,13 +77,18 @@ TWBD:SetScript("OnEvent", function()
             if TWBD.combatProcs > 0 then
                 DEFAULT_CHAT_FRAME:AddMessage("|cff0070de[TWBlueDragon]" .. FONT_COLOR_CODE_CLOSE .. ": " .. TWBD.combatProcs .. ' time(s) last fight.', 0, 1, 0)
             end
+            if TWBD.rejuvProcs > 0 then
+                DEFAULT_CHAT_FRAME:AddMessage("|cff0070de[TWBlueDragon]" .. FONT_COLOR_CODE_CLOSE .. ": " .. TWBD.rejuvProcs .. ' rejuv procs for '.. TWBD.rejuvProcs * 60 ..' mana last fight.', 0, 1, 0)
+            end
             TWBD.combatProcs = 0
+            TWBD.rejuvProcs = 0
             TWBD.combat = false
             TWBD.lastTimeLeft = 2000
         end
         if event == "PLAYER_REGEN_DISABLED" then
             --entered combat
             TWBD.combatProcs = 0
+            TWBD.rejuvProcs = 0
             TWBD.combat = true
         end
         if event == "COMBAT_TEXT_UPDATE" and arg1 == "AURA_START" and arg2 == TWBD.DB_Name then
@@ -101,6 +107,11 @@ TWBD:SetScript("OnEvent", function()
 
             TWWingsAnimation.blueDragon = false
             TWWingsAnimation:Hide()
+        end
+        if event == "COMBAT_TEXT_UPDATE" and arg1 == "MANA" then
+            if arg2 == '60' then
+                TWBD.rejuvProcs = TWBD.rejuvProcs + 1
+            end
         end
     end
 end)
@@ -150,12 +161,14 @@ TWWingsAnimation:SetScript("OnUpdate", function()
         if TWWingsAnimation.scale <= 1 then
             TWWingsAnimation.direction = 1
         end
-        getglobal('TWBDWings'):SetScale(TWWingsAnimation.scale)
-        getglobal('TWBDWings'):SetAlpha(TWWingsAnimation.scale - 0.5)
+        getglobal('TWBDWingsTLeft'):SetHeight(56 + TWWingsAnimation.scale * 200)
+        getglobal('TWBDWingsTRight'):SetHeight(56 + TWWingsAnimation.scale * 200)
+        getglobal('TWBDWings'):SetAlpha(2 - TWWingsAnimation.scale)
         this.startTime = GetTime()
     end
 end)
 
 function start_wings_anim()
+    TWWingsAnimation.blueDragon = true
     TWWingsAnimation:Show()
 end
