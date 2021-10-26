@@ -7,12 +7,15 @@ TWBD:RegisterEvent("PLAYER_REGEN_DISABLED")
 TWBD:RegisterEvent("PLAYER_REGEN_ENABLED")
 TWBD.combat = false
 
---TWBD.icon = 'Interface\\Icons\\Spell_Holy_Renew'
 TWBD.icon = 'Interface\\Icons\\INV_Misc_Head_Dragon_Blue'
---TWBD.icon = 'Interface\\Icons\\Spell_Nature_Rejuvenation'
---TWBD.DB_Name = 'Renew'
 TWBD.DB_Name = 'Aura of the Blue Dragon'
---TWBD.DB_Name = 'Rejuvenation'
+
+TWBD.eIcon = 'Interface\\Icons\\Spell_Nature_Purge'
+TWBD.eCount = 'Interface\\Icons\\Spell_Nature_Purge'
+TWBD.eName = 'Epiphany'
+
+TWBD.blIcon = "Interface\\Icons\\Spell_Nature_BloodLust"
+TWBD.blStarted = false
 
 TWBD.lastTimeLeft = 2000
 TWBD.lastTime = 2000
@@ -20,8 +23,26 @@ TWBD.lastTime = 2000
 TWBD.animFrame = 0
 TWBD.maxAnimFrames = 40
 TWBD.animate = false
+TWBD.eCount = 0
 
 TWBD:SetScript("OnUpdate", function()
+    for j = 0, 8 do
+        local d_timeleft = GetPlayerBuffTimeLeft(GetPlayerBuff(j, "HARMFUL"))
+        local d_texture = GetPlayerBuffTexture(GetPlayerBuff(j, "HARMFUL"))
+
+        if d_texture then
+            if d_texture == TWBD.blIcon then
+                if d_timeleft >= 59  and not TWBD.blStarted then
+                    PlaySoundFile("Interface\\Addons\\TWBlueDragon\\sounds\\bfgdivision.ogg")
+                    TWBD.blStarted = true
+                end
+                if d_timeleft == 1 then
+                    TWBD.blStarted = false
+                end
+            end
+        end
+    end
+
     if not TWBD.combat then
         if getglobal('TWBlueDragon'):IsVisible() then
             getglobal('TWBlueDragon'):Hide()
@@ -75,21 +96,39 @@ TWBD:SetScript("OnEvent", function()
         if event == "PLAYER_REGEN_ENABLED" then
             --left combat
             if TWBD.combatProcs > 0 then
-                DEFAULT_CHAT_FRAME:AddMessage("|cff0070de[TWBlueDragon]" .. FONT_COLOR_CODE_CLOSE .. ": " .. TWBD.combatProcs .. ' time(s) last fight.', 0, 1, 0)
+
+                if BCS:GetManaRegen() then
+                    local base, _, mp5 = BCS:GetManaRegen()
+                    DEFAULT_CHAT_FRAME:AddMessage("|cff0070de[TWBlueDragon]" .. FONT_COLOR_CODE_CLOSE .. ": " .. TWBD.combatProcs .. ' blue dragon procs for ' ..  (base+mp5) * 3 *  TWBD.combatProcs .. ' mana last fight.', 0, 1, 0)
+                else
+                    DEFAULT_CHAT_FRAME:AddMessage("|cff0070de[TWBlueDragon]" .. FONT_COLOR_CODE_CLOSE .. ": " .. TWBD.combatProcs .. ' time(s) last fight.', 0, 1, 0)
+                end
+
             end
             if TWBD.rejuvProcs > 0 then
                 DEFAULT_CHAT_FRAME:AddMessage("|cff0070de[TWBlueDragon]" .. FONT_COLOR_CODE_CLOSE .. ": " .. TWBD.rejuvProcs .. ' rejuv procs for '.. TWBD.rejuvProcs * 60 ..' mana last fight.', 0, 1, 0)
+            end
+            if TWBD.eCount > 0 then
+                DEFAULT_CHAT_FRAME:AddMessage("|cff0070de[TWBlueDragon]" .. FONT_COLOR_CODE_CLOSE .. ": " .. TWBD.eCount .. ' Epiphany procs for '.. TWBD.eCount * 6 * 24 ..' mana last fight.', 0, 1, 0)
             end
             TWBD.combatProcs = 0
             TWBD.rejuvProcs = 0
             TWBD.combat = false
             TWBD.lastTimeLeft = 2000
+            TWBD.eCount = 0
         end
         if event == "PLAYER_REGEN_DISABLED" then
             --entered combat
             TWBD.combatProcs = 0
             TWBD.rejuvProcs = 0
             TWBD.combat = true
+            TWBD.eCount = 0
+        end
+        if event == "COMBAT_TEXT_UPDATE" and arg1 == "AURA_START" and arg2 == TWBD.eName then
+            if not TWBD.combat then
+                return false
+            end
+            TWBD.eCount = TWBD.eCount + 1
         end
         if event == "COMBAT_TEXT_UPDATE" and arg1 == "AURA_START" and arg2 == TWBD.DB_Name then
             if not TWBD.combat then
