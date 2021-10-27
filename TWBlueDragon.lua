@@ -11,7 +11,7 @@ TWBD.icon = 'Interface\\Icons\\INV_Misc_Head_Dragon_Blue'
 TWBD.DB_Name = 'Aura of the Blue Dragon'
 
 TWBD.eIcon = 'Interface\\Icons\\Spell_Nature_Purge'
-TWBD.eCount = 'Interface\\Icons\\Spell_Nature_Purge'
+TWBD.eCount = 0
 TWBD.eName = 'Epiphany'
 
 TWBD.blIcon = "Interface\\Icons\\Spell_Nature_BloodLust"
@@ -23,7 +23,6 @@ TWBD.lastTime = 2000
 TWBD.animFrame = 0
 TWBD.maxAnimFrames = 40
 TWBD.animate = false
-TWBD.eCount = 0
 
 TWBD:SetScript("OnUpdate", function()
     for j = 0, 8 do
